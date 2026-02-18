@@ -1,20 +1,30 @@
+
 CHIP SatAddSub16{
+    IN x[16], y[16], op;
+    OUT out[16], ovf;
 
-IN x[16], y[16], op
-OUT out[16], ovf;
+    PARTS:
+    
+    Xor16(a=y, b[0]=op, b[1]=op, ..., b[15]=op, out=yMux); // Simplificado: b=op
 
-PARTS:
+  
+    FullAdder16(a=x, b=yMux, c=op, out=sum, out[15]=signoOut, out[0..14]=mag);
 
-Not16(in= x, out = notX);
-Add16(a=x , b=y , out=sumXY );
-Add16(a=notX , b= y , out=substractionXY );
-Not16(in= substractionXY, out = finalSubstractionXY);
+    
+    Xor(a=x[15], b=yMux[15], out=signosDiferentes);
+    Xor(a=x[15], b=signoOut, out=signoCambio);
+    Not(in=signosDiferentes, out=signosIguales);
+    And(a=signosIguales, b=signoCambio, out=ovfInternal, out=ovf);
 
-Mux16(a= sumXY, b=finalSubstractionXY , sel= op, out=out,out[15]=signNOrP  );
-
-Mux16(a= 
-
-
-Mux16(
+    
+    // Si ovf=1 y signoOut=0 (debería ser neg), satura a -32768
+    // Si ovf=1 y signoOut=1 (debería ser pos), satura a 32767
+    Mux16(a=sum, b[0..14]=true, b[15]=false, sel=posSaturation, out=tempOut);
+    And16(a=tempOut, b=true, out=out);
 
 }
+ 
+
+	
+
+
