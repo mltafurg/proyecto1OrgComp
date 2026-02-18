@@ -1,0 +1,13 @@
+CHIP SatAddSub16{
+
+IN x[16], y[16], op
+OUT out[16], ovf;
+
+PARTS:
+
+Not16(in= x, out = notX);
+Add16(a=x , b=y , out=sumXY );
+Add16(a=notX , b= y , out=substractionXY );
+Not16(in= substractionXY, out = finalSubstractionXY);
+
+Mux16(a= sumXY, b=finalSubstractionXY , sel= op, out=out );
